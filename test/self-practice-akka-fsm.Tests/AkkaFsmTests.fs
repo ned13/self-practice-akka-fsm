@@ -1,6 +1,5 @@
 module SelfPractice.AkkaFsmTests
 
-open System
 open Akka.Actor
 open Akka.TestKit.Xunit2
 

@@ -3,9 +3,6 @@ namespace SelfPractice.AkkaFsm
 open Akka.Actor
 open Akka.Event
 
-
-
-
 module TripState =
     type TripStateTrigger =
                 | ConfirmRequest
@@ -16,8 +13,6 @@ module TripState =
                 | ArrivedAtDestination
                 | CompleteTrip
                 | Cancel
-
-
 
     module CreatedState =
         type State = RequestReceived | AwaitingDriver | Completed
@@ -71,18 +66,15 @@ module TripState =
 
     module DriverAssignedState =
         type State = DriverEnRoute | DriverArrived | Completed
-        type IStateData = interface end
-        type NoStateData private () =
-            interface IStateData
-            static member val Instance = NoStateData() with get
+        type StateData = private | NoStateData
 
         type DriverStateActor(tripActor: IActorRef) as this =
-            inherit FSM<State, IStateData>()
+            inherit FSM<State, StateData>()
             let _logger: ILoggingAdapter = DriverStateActor.Context.GetLogger()
 
             do
                 let self = this.Self
-                this.StartWith(DriverEnRoute, NoStateData.Instance)
+                this.StartWith(DriverEnRoute, NoStateData)
                 this.When(DriverEnRoute,
                           fun state ->
                                 match state.FsmEvent with
@@ -105,7 +97,7 @@ module TripState =
                                | _ -> this.Stay())
                 this.When(Completed,
                           fun state ->
-                              _logger.Info($"CreatedStateActor {Completed}")
+                              _logger.Info($"DriverStateActor {Completed}")
                               this.Stop()
                           )
                 this.WhenUnhandled(
@@ -153,7 +145,7 @@ module TripState =
                                     | _ -> this.Stay())
                     this.When(Completed,
                               fun state ->
-                                  _logger.Info($"CreatedStateActor {Completed}")
+                                  _logger.Info($"DriverStateActor {Completed}")
                                   this.Stop()
                               )
                     this.WhenUnhandled(
@@ -200,7 +192,7 @@ module TripState =
                                     | _ -> this.Stay())
                     this.When(Completed,
                               fun state ->
-                                  _logger.Info($"CreatedStateActor {Completed}")
+                                  _logger.Info($"RiderStateActor {Completed}")
                                   this.Stop()
                               )
                     this.WhenUnhandled(
@@ -276,7 +268,7 @@ module TripState =
                                 | _ -> this.Stay())
                 this.When(Completed,
                           fun state ->
-                              _logger.Info($"CreatedStateActor {Completed}")
+                              _logger.Info($"InprogressStateActor {Completed}")
                               this.Stop()
                           )
                 this.WhenUnhandled(
@@ -290,10 +282,6 @@ module TripState =
                 Props.Create<InprogressStateActor>(fun () -> InprogressStateActor(tripActor))
 
     type State = Created | InProgress | DriverAssigned | Canceled | Completed
-    // type IStateData = interface end
-    // type NoStateData private () =
-    //     interface IStateData
-    //     static member val Instance = NoStateData() with get
 
     type NoStateData = private | NoStateData
     type CreatedStateData = {
