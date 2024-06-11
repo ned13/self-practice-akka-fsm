@@ -14,6 +14,9 @@ The state representation is done using [Akka.NET FSM Actor](https://getakka.net/
 
 Statechart supports communication between different state machine. It could be implemented with Akka.NET FSM Actor easily since actor support message interaction by default.
 
+The actor hierarchy is as follows
+![](doc/tripStateActor-hierarchy.png)
+
 ## Build
 ```bash
 dotnet build
